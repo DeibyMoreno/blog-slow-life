@@ -1,0 +1,53 @@
+type Post implements Node {
+  id: UUID!
+  title: String!
+  slug: String!
+  content: String
+  excerpt: String
+  coverImage: String
+  status: PostStatus!
+  author: User!
+  category: Category
+  tags: [Tag!]!
+  publishedAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+input CreatePostInput {
+  title: String!
+  content: String
+  excerpt: String
+  coverImage: String
+  status: PostStatus = DRAFT
+  categoryId: UUID
+  tagIds: [UUID!]
+}
+
+input UpdatePostInput {
+  title: String
+  content: String
+  excerpt: String
+  coverImage: String
+  status: PostStatus
+  categoryId: UUID
+  tagIds: [UUID!]
+}
+
+extend type Query {
+  posts(limit: Int = 10, offset: Int = 0, status: PostStatus): [Post!]!
+  post(id: UUID): Post
+  postBySlug(slug: String!): Post
+}
+
+extend type Mutation {
+  createPost(input: CreatePostInput!): Post!
+  updatePost(id: UUID!, input: UpdatePostInput!): Post!
+  deletePost(id: UUID!): Boolean!
+}

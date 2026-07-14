@@ -1,0 +1,23 @@
+type Category implements Node {
+  id: UUID!
+  name: String!
+  slug: String!
+  description: String
+  posts: [Post!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input CreateCategoryInput {
+  name: String!
+  description: String
+}
+
+extend type Query {
+  categories: [Category!]!
+  category(id: UUID): Category
+}
+
+extend type Mutation {
+  createCategory(input: CreateCategoryInput!): Category!
+}

@@ -1,0 +1,31 @@
+type Role implements Node {
+  id: UUID!
+  name: String!
+  description: String
+  permissions: [Permission!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Permission {
+  id: UUID!
+  resource: String!
+  action: String!
+  description: String
+  createdAt: DateTime!
+}
+
+input CreateRoleInput {
+  name: String!
+  description: String
+  permissionIds: [UUID!]
+}
+
+extend type Query {
+  roles: [Role!]!
+  role(id: UUID): Role
+}
+
+extend type Mutation {
+  createRole(input: CreateRoleInput!): Role!
+}

@@ -1,0 +1,24 @@
+scalar DateTime
+scalar UUID
+
+interface Node {
+  id: UUID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Query {
+  health: HealthResponse!
+  _empty: String
+}
+
+type Mutation {
+  _empty: String
+}
+
+type HealthResponse {
+  status: String!
+  timestamp: DateTime!
+  version: String!
+  uptime: Float!
+}

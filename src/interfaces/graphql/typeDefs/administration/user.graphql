@@ -1,0 +1,30 @@
+type User implements Node {
+  id: UUID!
+  email: String!
+  firstName: String!
+  lastName: String!
+  fullName: String!
+  avatarUrl: String
+  isActive: Boolean!
+  role: Role!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input CreateUserInput {
+  email: String!
+  password: String!
+  firstName: String!
+  lastName: String!
+  roleId: UUID!
+}
+
+extend type Query {
+  users: [User!]!
+  user(id: UUID): User
+  me: User
+}
+
+extend type Mutation {
+  createUser(input: CreateUserInput!): User!
+}
