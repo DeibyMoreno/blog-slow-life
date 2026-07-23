@@ -1,10 +1,24 @@
-import type { User as PrismaUser } from '@prisma/client'
-import { User } from '../../../../domain/administration/entities/index.js'
+import type { User as PrismaUser, Role as PrismaRole } from '@prisma/client'
+import { Permission, Role, User } from '../../../../domain/administration/entities/index.js'
 import { UUID } from '../../../../domain/shared/value-objects/uuid.vo.js'
 import { Email } from '../../../../domain/shared/value-objects/email.vo.js'
 
 export class UserMapper {
-  static toDomain(prismaUser: PrismaUser): User {
+  static toDomain(prismaUser: PrismaUser & { role?: PrismaRole & { permissions?: { id: string; resource: string; action: string; description: string | null; createdAt: Date }[] } }): User {
+    const prismaRole = prismaUser.role
+    const domainRole = prismaRole
+      ? new Role(
+          UUID.from(prismaRole.id),
+          prismaRole.createdAt,
+          prismaRole.updatedAt,
+          prismaRole.name,
+          prismaRole.description,
+          (prismaRole.permissions ?? []).map(
+            (p) => new Permission(UUID.from(p.id), p.resource, p.action, p.description, p.createdAt),
+          ),
+        )
+      : null
+
     return new User(
       UUID.from(prismaUser.id),
       prismaUser.createdAt,
@@ -17,6 +31,7 @@ export class UserMapper {
       prismaUser.isActive,
       UUID.from(prismaUser.roleId),
       prismaUser.deletedAt,
+      domainRole,
     )
   }
 

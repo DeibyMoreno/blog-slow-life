@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum PostStatus {
@@ -14,13 +13,13 @@ enum PostStatus {
 }
 
 model Role {
-  id          String      @id @default(uuid())
-  name        String      @unique
+  id          String       @id @default(uuid())
+  name        String       @unique
   description String?
   permissions Permission[]
   users       User[]
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@map("roles")
 }
@@ -112,10 +111,10 @@ model Category {
 }
 
 model Tag {
-  id    String   @id @default(uuid())
-  name  String   @unique
-  slug  String   @unique
-  posts Post[]
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  posts     Post[]
   createdAt DateTime @default(now())
 
   @@map("tags")

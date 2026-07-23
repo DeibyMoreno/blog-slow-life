@@ -8,13 +8,15 @@ export class PrismaUserRepository implements UserRepository {
     const users = await prismaClient.user.findMany({
       where: { deletedAt: null },
       orderBy: { createdAt: 'desc' },
+      include: { role: true },
     })
-    return users.map(UserMapper.toDomain)
+    return users.map((user) => UserMapper.toDomain(user))
   }
 
   async findById(id: string): Promise<User | null> {
     const user = await prismaClient.user.findFirst({
       where: { id, deletedAt: null },
+      include: { role: true },
     })
     return user ? UserMapper.toDomain(user) : null
   }
@@ -22,6 +24,7 @@ export class PrismaUserRepository implements UserRepository {
   async findByEmail(email: string): Promise<User | null> {
     const user = await prismaClient.user.findFirst({
       where: { email, deletedAt: null },
+      include: { role: true },
     })
     return user ? UserMapper.toDomain(user) : null
   }

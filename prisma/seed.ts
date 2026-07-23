@@ -1,8 +1,11 @@
+import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { v4 as uuidv4 } from 'uuid'
 import { createHash } from 'node:crypto'
 
-const prisma = new PrismaClient()
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+const prisma = new PrismaClient({ adapter })
 
 function hashPassword(password: string): string {
   return createHash('sha256').update(password).digest('hex')

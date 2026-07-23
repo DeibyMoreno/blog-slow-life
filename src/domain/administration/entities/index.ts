@@ -15,6 +15,7 @@ export class User extends BaseEntity {
     public isActive: boolean,
     public roleId: UUID,
     public deletedAt: Date | null,
+    public role: Role | null = null,
   ) {
     super(id, createdAt, updatedAt)
   }
@@ -50,6 +51,7 @@ export class Role extends BaseEntity {
     updatedAt: Date | undefined,
     public name: string,
     public description: string | null,
+    public permissions: Permission[] = [],
   ) {
     super(id, createdAt, updatedAt)
   }
