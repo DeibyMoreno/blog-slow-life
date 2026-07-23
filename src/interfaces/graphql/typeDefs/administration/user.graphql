@@ -1,6 +1,6 @@
 type User implements Node {
   id: UUID!
-  email: String!
+  email: Email!
   firstName: String!
   lastName: String!
   fullName: String!

@@ -8,15 +8,15 @@ export class UserMapper {
     const prismaRole = prismaUser.role
     const domainRole = prismaRole
       ? new Role(
-          UUID.from(prismaRole.id),
-          prismaRole.createdAt,
-          prismaRole.updatedAt,
-          prismaRole.name,
-          prismaRole.description,
-          (prismaRole.permissions ?? []).map(
-            (p) => new Permission(UUID.from(p.id), p.resource, p.action, p.description, p.createdAt),
-          ),
-        )
+        UUID.from(prismaRole.id),
+        prismaRole.createdAt,
+        prismaRole.updatedAt,
+        prismaRole.name,
+        prismaRole.description,
+        (prismaRole.permissions ?? []).map(
+          (p) => new Permission(UUID.from(p.id), p.resource, p.action, p.description, p.createdAt),
+        ),
+      )
       : null
 
     return new User(
