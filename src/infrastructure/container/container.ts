@@ -13,6 +13,7 @@ import { CreateUserUseCase } from '../../application/administration/use-cases/cr
 import { LoginUseCase } from '../../application/administration/use-cases/login.use-case.js'
 import { PasswordService } from '../auth/password.service.js'
 import { JWTService } from '../auth/jwt.service.js'
+import { CreateRoleUseCase } from '@application/administration/use-cases/create-role.use-case.js'
 
 export class Container {
   private static instance: Container | null = null
@@ -26,7 +27,7 @@ export class Container {
   private readonly passwordService = new PasswordService()
   private readonly jwtService = new JWTService()
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): Container {
     if (!Container.instance) {
@@ -66,6 +67,10 @@ export class Container {
       this.passwordService,
       this.jwtService,
     )
+  }
+
+  get createRoleUseCase() {
+    return new CreateRoleUseCase(this.roleRepository)
   }
 }
 

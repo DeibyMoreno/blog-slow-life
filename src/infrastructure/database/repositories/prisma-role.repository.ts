@@ -21,6 +21,14 @@ export class PrismaRoleRepository implements RoleRepository {
     return role ? this.toDomain(role) : null
   }
 
+  async findByName(name: string): Promise<Role | null> {
+    const role = await prismaClient.role.findUnique({
+      where: { name },
+      include: { permissions: true },
+    })
+    return role ? this.toDomain(role) : null
+  }
+
   async save(role: Role): Promise<Role> {
     const created = await prismaClient.role.create({
       data: {

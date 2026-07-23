@@ -34,3 +34,10 @@ export class SessionExpiredError extends BusinessRuleViolationError {
     this.code = 'SESSION_EXPIRED'
   }
 }
+
+export class RoleAlreadyExistsError extends BusinessRuleViolationError {
+  constructor(name: string) {
+    super(`Role with name ${name} already exists`)
+    this.code = 'ROLE_ALREADY_EXISTS'
+  }
+}
