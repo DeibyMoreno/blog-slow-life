@@ -1,8 +1,8 @@
 import { PrismaUserRepository } from '../../../../../infrastructure/database/repositories/prisma-user.repository.js'
-import { CreateUserUseCase } from '../../../../../application/administration/use-cases/create-user.use-case.js'
+import { container } from '../../../../../infrastructure/container/container.js'
+import type { CreateUserDTO } from '../../../../../application/administration/dto/index.js'
 
 const repo = new PrismaUserRepository()
-const createUser = new CreateUserUseCase(repo)
 
 export const userResolvers = {
   Query: {
@@ -13,11 +13,8 @@ export const userResolvers = {
     },
   },
   Mutation: {
-    createUser: async (
-      _: unknown,
-      args: { input: Parameters<CreateUserUseCase['execute']>[0] },
-    ) => {
-      return createUser.execute(args.input)
+    createUser: async (_: unknown, args: { input: CreateUserDTO }) => {
+      return container.createUserUseCase.execute(args.input)
     },
   },
   User: {

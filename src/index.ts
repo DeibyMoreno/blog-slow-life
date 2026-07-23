@@ -35,7 +35,7 @@ async function bootstrap() {
     context: async ({ request }) => {
       const requestId = (request as unknown as { id?: string })?.id ?? ''
       const loggerChild = logger.child({ requestId })
-      const ctx = await contextFactory()
+      const ctx = await contextFactory(request as any)
       return {
         ...ctx,
         requestId,

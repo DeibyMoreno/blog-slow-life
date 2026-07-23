@@ -3,12 +3,16 @@ import { PrismaUserRepository } from '../database/repositories/prisma-user.repos
 import { PrismaCategoryRepository } from '../database/repositories/prisma-category.repository.js'
 import { PrismaTagRepository } from '../database/repositories/prisma-tag.repository.js'
 import { PrismaRoleRepository } from '../database/repositories/prisma-role.repository.js'
+import { PrismaSessionRepository } from '../database/repositories/prisma-session.repository.js'
 import { CreatePostUseCase } from '../../application/blog/use-cases/create-post.use-case.js'
 import { GetPostsUseCase } from '../../application/blog/use-cases/get-posts.use-case.js'
 import { GetPostBySlugUseCase } from '../../application/blog/use-cases/get-post-by-slug.use-case.js'
 import { UpdatePostUseCase } from '../../application/blog/use-cases/update-post.use-case.js'
 import { DeletePostUseCase } from '../../application/blog/use-cases/delete-post.use-case.js'
 import { CreateUserUseCase } from '../../application/administration/use-cases/create-user.use-case.js'
+import { LoginUseCase } from '../../application/administration/use-cases/login.use-case.js'
+import { PasswordService } from '../auth/password.service.js'
+import { JWTService } from '../auth/jwt.service.js'
 
 export class Container {
   private static instance: Container | null = null
@@ -18,6 +22,9 @@ export class Container {
   private readonly categoryRepository = new PrismaCategoryRepository()
   private readonly tagRepository = new PrismaTagRepository()
   private readonly roleRepository = new PrismaRoleRepository()
+  private readonly sessionRepository = new PrismaSessionRepository()
+  private readonly passwordService = new PasswordService()
+  private readonly jwtService = new JWTService()
 
   private constructor() {}
 
@@ -49,7 +56,16 @@ export class Container {
   }
 
   get createUserUseCase() {
-    return new CreateUserUseCase(this.userRepository)
+    return new CreateUserUseCase(this.userRepository, this.passwordService)
+  }
+
+  get loginUseCase() {
+    return new LoginUseCase(
+      this.userRepository,
+      this.sessionRepository,
+      this.passwordService,
+      this.jwtService,
+    )
   }
 }
 

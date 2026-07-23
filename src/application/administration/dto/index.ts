@@ -19,6 +19,11 @@ export const CreateRoleSchema = z.object({
   permissionIds: z.array(z.string().uuid()).optional(),
 })
 
+export const RefreshTokenSchema = z.object({
+  refreshToken: z.string().min(1),
+})
+
 export type CreateUserDTO = z.infer<typeof CreateUserSchema>
 export type LoginDTO = z.infer<typeof LoginSchema>
 export type CreateRoleDTO = z.infer<typeof CreateRoleSchema>
+export type RefreshTokenDTO = z.infer<typeof RefreshTokenSchema>

@@ -1,13 +1,20 @@
 import type { PrismaClient } from '@prisma/client'
 import type { Logger } from 'pino'
+import type { Request } from 'express'
 import type { User } from '../../domain/administration/entities/index.js'
 import DataLoader from 'dataloader'
+import { JWTService } from '../../infrastructure/auth/jwt.service.js'
+import { PrismaUserRepository } from '../../infrastructure/database/repositories/prisma-user.repository.js'
+
+const jwtService = new JWTService()
+const userRepository = new PrismaUserRepository()
 
 export interface GraphQLContext {
   requestId: string
   logger: Logger
   prisma: PrismaClient
   user: User | null
+  request?: Request
   loaders: {
     user: DataLoader<string, unknown>
     post: DataLoader<string, unknown>
@@ -22,7 +29,23 @@ export interface ContextFactoryParams {
 }
 
 export function createContextFactory(params: ContextFactoryParams) {
-  return async function buildContext(): Promise<GraphQLContext> {
+  return async function buildContext(request: Request): Promise<GraphQLContext> {
+    let user: User | null = null
+
+    const authHeader = request.headers.authorization
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.slice(7)
+      try {
+        const payload = await jwtService.verifyAccessToken(token)
+        const found = await userRepository.findById(payload.sub)
+        if (found && found.isActive && !found.isDeleted()) {
+          user = found
+        }
+      } catch {
+        // Handle token verification errors
+      }
+    }
+
     const loaders = {
       user: new DataLoader<string, unknown>(async (ids) => {
         const users = await params.prisma.user.findMany({
@@ -48,7 +71,8 @@ export function createContextFactory(params: ContextFactoryParams) {
       requestId: params.requestId,
       logger: params.logger.child({ requestId: params.requestId }),
       prisma: params.prisma,
-      user: null,
+      user,
+      request,
       loaders,
     }
   }

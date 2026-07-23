@@ -1,9 +1,17 @@
+import { container } from '../../../../../infrastructure/container/container.js'
 import type { GraphQLContext } from '../../../context.js'
 
 export const authResolvers = {
   Mutation: {
-    login: async (_: unknown, _args: unknown, _ctx: GraphQLContext) => {
-      throw new Error('Not implemented yet')
+    login: async (
+      _: unknown,
+      args: { input: { email: string; password: string } },
+      ctx: GraphQLContext,
+    ) => {
+      return container.loginUseCase.execute(args.input, {
+        ipAddress: ctx.request?.ip,
+        userAgent: ctx.request?.headers?.['user-agent'],
+      })
     },
     refreshToken: async (_: unknown, _args: unknown, _ctx: GraphQLContext) => {
       throw new Error('Not implemented yet')

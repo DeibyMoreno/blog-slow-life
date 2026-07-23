@@ -2,13 +2,13 @@ import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { v4 as uuidv4 } from 'uuid'
-import { createHash } from 'node:crypto'
+import bcrypt from 'bcrypt'
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter })
 
-function hashPassword(password: string): string {
-  return createHash('sha256').update(password).digest('hex')
+async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 12)
 }
 
 async function main() {
@@ -92,7 +92,7 @@ async function main() {
     create: {
       id: adminUserId,
       email: 'admin@slowlife.com',
-      passwordHash: hashPassword('admin123'),
+      passwordHash: await hashPassword('admin123'),
       firstName: 'Admin',
       lastName: 'Slow Life',
       roleId: adminRoleId,
