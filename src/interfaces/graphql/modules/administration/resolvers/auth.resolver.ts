@@ -9,8 +9,8 @@ export const authResolvers = {
       ctx: GraphQLContext,
     ) => {
       return container.loginUseCase.execute(args.input, {
-        ipAddress: ctx.request?.ip,
-        userAgent: ctx.request?.headers?.['user-agent'],
+        ipAddress: ctx.request?.headers?.get('x-forwarded-for') ?? ctx.request?.headers?.get('x-real-ip') ?? undefined,
+        userAgent: ctx.request?.headers?.get('user-agent') ?? undefined,
       })
     },
     refreshToken: async (_: unknown, _args: unknown, _ctx: GraphQLContext) => {

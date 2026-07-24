@@ -10,6 +10,7 @@ import { GetPostBySlugUseCase } from '../../application/blog/use-cases/get-post-
 import { UpdatePostUseCase } from '../../application/blog/use-cases/update-post.use-case.js'
 import { DeletePostUseCase } from '../../application/blog/use-cases/delete-post.use-case.js'
 import { CreateUserUseCase } from '../../application/administration/use-cases/create-user.use-case.js'
+import { GetMeUseCase } from '../../application/administration/use-cases/get-me.use-case.js'
 import { LoginUseCase } from '../../application/administration/use-cases/login.use-case.js'
 import { PasswordService } from '../auth/password.service.js'
 import { JWTService } from '../auth/jwt.service.js'
@@ -58,6 +59,10 @@ export class Container {
 
   get createUserUseCase() {
     return new CreateUserUseCase(this.userRepository, this.passwordService)
+  }
+
+  get getMeUseCase() {
+    return new GetMeUseCase(this.userRepository)
   }
 
   get loginUseCase() {

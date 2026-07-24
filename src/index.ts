@@ -12,6 +12,9 @@ import { schema } from './interfaces/graphql/schema.js'
 import { createContextFactory } from './interfaces/graphql/context.js'
 import { useRequestId } from './interfaces/graphql/plugins/request-id.plugin.js'
 import { healthRouter } from './interfaces/http/health.controller.js'
+import { GraphQLError } from 'graphql'
+import { AppError } from '@domain/shared/errors/index.js'
+import { env } from '@config/env.js'
 
 async function bootstrap() {
   const app = express()
@@ -35,7 +38,7 @@ async function bootstrap() {
     context: async ({ request }) => {
       const requestId = (request as unknown as { id?: string })?.id ?? ''
       const loggerChild = logger.child({ requestId })
-      const ctx = await contextFactory(request as any)
+      const ctx = await contextFactory(request)
       return {
         ...ctx,
         requestId,
@@ -55,7 +58,30 @@ async function bootstrap() {
         },
       }),
     ],
-    maskedErrors: serverConfig.isProd ? { errorMessage: 'Internal server error' } : false,
+    maskedErrors: {
+      maskError: (error, message, isDev) => {
+        const originalError = isGraphQLError(error)
+          ? (error as GraphQLError).originalError ?? error
+          : error;
+
+        if (originalError instanceof AppError) {
+          const extensions: Record<string, unknown> = {
+            code: originalError.code,
+            http: { status: originalError.statusCode },
+          };
+
+          /* if (originalError instanceof ValidationError && originalError.details) {
+            extensions.details = originalError.details;
+          } */
+
+          return new GraphQLError(originalError.message, { extensions });
+        }
+
+        return new GraphQLError(isDev ? message : 'Unexpected error.');
+      },
+      errorMessage: 'Unexpected error.',
+      isDev: env.NODE_ENV !== 'production',
+    },
     graphiql: serverConfig.isDev ? { title: 'Slow Life Blog CMS - GraphQL' } : false,
     logging: false,
   })
@@ -89,3 +115,7 @@ bootstrap().catch((err) => {
   logger.fatal(err, 'Failed to start server')
   process.exit(1)
 })
+
+function isGraphQLError(error: unknown): error is GraphQLError {
+  return error instanceof GraphQLError;
+}

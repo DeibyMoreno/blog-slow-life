@@ -1,3 +1,11 @@
+enum AuthRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+directive @auth(role: AuthRole) on FIELD_DEFINITION
+
 scalar DateTime
 scalar UUID
 scalar Email

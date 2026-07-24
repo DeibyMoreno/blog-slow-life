@@ -1,6 +1,5 @@
 import type { PrismaClient } from '@prisma/client'
 import type { Logger } from 'pino'
-import type { Request } from 'express'
 import type { User } from '../../domain/administration/entities/index.js'
 import DataLoader from 'dataloader'
 import { JWTService } from '../../infrastructure/auth/jwt.service.js'
@@ -32,7 +31,7 @@ export function createContextFactory(params: ContextFactoryParams) {
   return async function buildContext(request: Request): Promise<GraphQLContext> {
     let user: User | null = null
 
-    const authHeader = request.headers.authorization
+    const authHeader = request.headers.get('authorization')
     if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.slice(7)
       try {

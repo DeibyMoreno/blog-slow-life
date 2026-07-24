@@ -1,24 +1,36 @@
-export abstract class SlowLifeError extends Error {
-  public abstract readonly code: string
-  public abstract readonly statusCode: number
+export class AppError extends Error {
+  public readonly statusCode: number;
+  public readonly code: string;
+  public readonly isOperational: boolean;
 
-  constructor(message: string) {
-    super(message)
-    this.name = this.constructor.name
+  constructor(
+    message: string,
+    statusCode: number = 500,
+    code: string = 'INTERNAL_ERROR',
+    isOperational: boolean = true,
+  ) {
+    super(message);
+    this.name = this.constructor.name;
+    this.statusCode = statusCode;
+    this.code = code;
+    this.isOperational = isOperational;
+
+    Object.setPrototypeOf(this, new.target.prototype);
+    Error.captureStackTrace(this, this.constructor);
   }
 }
 
-export abstract class DomainError extends SlowLifeError {
+export abstract class DomainError extends AppError {
   code = 'DOMAIN_ERROR'
   statusCode = 400
 }
 
-export abstract class ApplicationError extends SlowLifeError {
+export abstract class ApplicationError extends AppError {
   code = 'APPLICATION_ERROR'
   statusCode = 500
 }
 
-export abstract class InfrastructureError extends SlowLifeError {
+export abstract class InfrastructureError extends AppError {
   code = 'INFRASTRUCTURE_ERROR'
   statusCode = 500
 }
@@ -40,12 +52,9 @@ export class BusinessRuleViolationError extends DomainError {
   }
 }
 
-export class UnauthorizedError extends ApplicationError {
-  code = 'UNAUTHORIZED'
-  statusCode = 401
-
-  constructor(message = 'Authentication required') {
-    super(message)
+export class UnauthorizedError extends AppError {
+  constructor(message: string = 'Unauthorized') {
+    super(message, 401, 'UNAUTHORIZED');
   }
 }
 

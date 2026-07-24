@@ -23,7 +23,12 @@ export const RefreshTokenSchema = z.object({
   refreshToken: z.string().min(1),
 })
 
+export const GetMeSchema = z.object({
+  userId: z.string().uuid(),
+})
+
 export type CreateUserDTO = z.infer<typeof CreateUserSchema>
 export type LoginDTO = z.infer<typeof LoginSchema>
 export type CreateRoleDTO = z.infer<typeof CreateRoleSchema>
 export type RefreshTokenDTO = z.infer<typeof RefreshTokenSchema>
+export type GetMeDTO = z.infer<typeof GetMeSchema>

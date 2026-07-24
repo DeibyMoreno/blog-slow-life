@@ -10,3 +10,6 @@ logs/
 coverage/
 .vscode/
 *.tsbuildinfo
+/.agents
+/.claude
+/.opencode
