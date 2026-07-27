@@ -25,6 +25,10 @@ export const errorMaskConfig: YogaMaskedErrorOpts = {
       return new GraphQLError(originalError.message, { extensions })
     }
 
+    if (isDev && isGraphQLError(error)) {
+      return new GraphQLError(error.message, { extensions: error.extensions })
+    }
+
     return new GraphQLError(message)
   },
   errorMessage: 'Unexpected error.',
