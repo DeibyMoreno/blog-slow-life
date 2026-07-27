@@ -1,8 +1,10 @@
-type Tag {
+type Tag implements Node {
   id: UUID!
   name: String!
   slug: String!
+  posts: [Post!]!
   createdAt: DateTime!
+  updatedAt: DateTime!
 }
 
 input CreateTagInput {
@@ -12,8 +14,10 @@ input CreateTagInput {
 extend type Query {
   tags: [Tag!]!
   tag(id: UUID): Tag
+  tagBySlug(slug: String!): Tag
 }
 
 extend type Mutation {
   createTag(input: CreateTagInput!): Tag!
+  deleteTag(id: UUID!): Boolean!
 }

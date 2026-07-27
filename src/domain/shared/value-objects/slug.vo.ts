@@ -7,7 +7,7 @@ const slugSchema = z
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be kebab-case')
 
 export class Slug {
-  private constructor(private readonly _value: string) {}
+  private constructor(private readonly _value: string) { }
 
   static create(value: string): Slug {
     const slug = value

@@ -9,6 +9,9 @@ import { GetPostsUseCase } from '../../application/blog/use-cases/get-posts.use-
 import { GetPostBySlugUseCase } from '../../application/blog/use-cases/get-post-by-slug.use-case.js'
 import { UpdatePostUseCase } from '../../application/blog/use-cases/update-post.use-case.js'
 import { DeletePostUseCase } from '../../application/blog/use-cases/delete-post.use-case.js'
+import { CreateTagUseCase } from '../../application/blog/use-cases/create-tag.use-case.js'
+import { DeleteTagUseCase } from '../../application/blog/use-cases/delete-tag.use-case.js'
+import { GetTagsUseCase } from '../../application/blog/use-cases/get-tags.use-case.js'
 import { CreateUserUseCase } from '../../application/administration/use-cases/create-user.use-case.js'
 import { GetMeUseCase } from '../../application/administration/use-cases/get-me.use-case.js'
 import { LoginUseCase } from '../../application/administration/use-cases/login.use-case.js'
@@ -22,7 +25,7 @@ export class Container {
   private readonly postRepository = new PrismaPostRepository()
   private readonly userRepository = new PrismaUserRepository()
   private readonly categoryRepository = new PrismaCategoryRepository()
-  private readonly tagRepository = new PrismaTagRepository()
+  private readonly _tagRepository = new PrismaTagRepository()
   private readonly roleRepository = new PrismaRoleRepository()
   private readonly sessionRepository = new PrismaSessionRepository()
   private readonly passwordService = new PasswordService()
@@ -35,6 +38,10 @@ export class Container {
       Container.instance = new Container()
     }
     return Container.instance
+  }
+
+  get tagRepository() {
+    return this._tagRepository
   }
 
   get createPostUseCase() {
@@ -76,6 +83,18 @@ export class Container {
 
   get createRoleUseCase() {
     return new CreateRoleUseCase(this.roleRepository)
+  }
+
+  get createTagUseCase() {
+    return new CreateTagUseCase(this._tagRepository)
+  }
+
+  get deleteTagUseCase() {
+    return new DeleteTagUseCase(this._tagRepository)
+  }
+
+  get getTagsUseCase() {
+    return new GetTagsUseCase(this._tagRepository)
   }
 }
 

@@ -24,6 +24,11 @@ export const UpdatePostSchema = z.object({
 export type CreatePostDTO = z.infer<typeof CreatePostSchema>
 export type UpdatePostDTO = z.infer<typeof UpdatePostSchema>
 
+export const CreateTagSchema = z.object({
+  name: z.string().min(1).max(50),
+})
+export type CreateTagDTO = z.infer<typeof CreateTagSchema>
+
 export interface PostResponse {
   id: string
   title: string

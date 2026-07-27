@@ -56,11 +56,7 @@ export const postResolvers = {
       return ctx.loaders.category.load(parent.categoryId)
     },
     tags: async (parent: { id: string }, _args: unknown, ctx: GraphQLContext) => {
-      const post = await ctx.prisma.post.findUnique({
-        where: { id: parent.id },
-        include: { tags: true },
-      })
-      return post?.tags ?? []
+      return ctx.loaders.tagsByPostId.load(parent.id)
     },
   },
 }

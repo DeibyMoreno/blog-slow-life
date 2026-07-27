@@ -15,4 +15,5 @@ export const resolvers = {
   },
   Post: postResolvers.Post,
   Category: categoryResolvers.Category,
+  Tag: tagResolvers.Tag,
 }

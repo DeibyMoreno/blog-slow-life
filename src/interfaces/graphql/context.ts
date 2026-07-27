@@ -16,8 +16,10 @@ export interface GraphQLContext {
   request?: Request
   loaders: {
     user: DataLoader<string, unknown>
-    post: DataLoader<string, unknown>
     category: DataLoader<string, unknown>
+    tag: DataLoader<string, unknown>
+    postsByTagId: DataLoader<string, unknown>
+    tagsByPostId: DataLoader<string, unknown>
   }
 }
 
@@ -52,17 +54,35 @@ export function createContextFactory(params: ContextFactoryParams) {
         })
         return ids.map((id) => users.find((u) => u.id === id) ?? null)
       }),
-      post: new DataLoader<string, unknown>(async (ids) => {
-        const posts = await params.prisma.post.findMany({
-          where: { id: { in: [...ids] } },
-        })
-        return ids.map((id) => posts.find((p) => p.id === id) ?? null)
-      }),
       category: new DataLoader<string, unknown>(async (ids) => {
         const categories = await params.prisma.category.findMany({
           where: { id: { in: [...ids] } },
         })
         return ids.map((id) => categories.find((c) => c.id === id) ?? null)
+      }),
+      tag: new DataLoader<string, unknown>(async (ids) => {
+        const tags = await params.prisma.tag.findMany({
+          where: { id: { in: [...ids] } },
+        })
+        return ids.map((id) => tags.find((t) => t.id === id) ?? null)
+      }),
+      postsByTagId: new DataLoader<string, unknown>(async (tagIds) => {
+        const posts = await params.prisma.post.findMany({
+          where: { tags: { some: { id: { in: [...tagIds] } } }, deletedAt: null },
+          include: { tags: { select: { id: true } } },
+        })
+        return tagIds.map((tagId) =>
+          posts.filter((p) => p.tags.some((t) => t.id === tagId)),
+        )
+      }),
+      tagsByPostId: new DataLoader<string, unknown>(async (postIds) => {
+        const posts = await params.prisma.post.findMany({
+          where: { id: { in: [...postIds] } },
+          include: { tags: true },
+        })
+        return postIds.map(
+          (postId) => posts.find((p) => p.id === postId)?.tags ?? [],
+        )
       }),
     }
 

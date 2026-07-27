@@ -27,3 +27,10 @@ export class TagNotFoundError extends EntityNotFoundError {
     this.code = 'TAG_NOT_FOUND'
   }
 }
+
+export class TagSlugConflictError extends BusinessRuleViolationError {
+  constructor(slug: string) {
+    super(`A tag with slug "${slug}" already exists`)
+    this.code = 'TAG_SLUG_CONFLICT'
+  }
+}

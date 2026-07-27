@@ -62,11 +62,14 @@ export class Category extends BaseEntity {
   }
 }
 
-export class Tag {
+export class Tag extends BaseEntity {
   constructor(
-    public readonly id: UUID,
-    public readonly name: string,
-    public readonly slug: Slug,
-    public readonly createdAt: Date,
-  ) {}
+    id: UUID | undefined,
+    createdAt: Date | undefined,
+    updatedAt: Date | undefined,
+    public name: string,
+    public slug: Slug | string,
+  ) {
+    super(id, createdAt, updatedAt)
+  }
 }

@@ -1,18 +1,22 @@
 import type { TagRepository } from '../../../application/shared/ports/outbound/tag.repository.js'
-import { Tag } from '../../../domain/blog/entities/index.js'
-import { UUID } from '../../../domain/shared/value-objects/uuid.vo.js'
-import { Slug } from '../../../domain/shared/value-objects/slug.vo.js'
+import type { Tag } from '../../../domain/blog/entities/index.js'
+import { TagMapper } from '../prisma/mappers/tag.mapper.js'
 import { prismaClient } from '../prisma/client.js'
 
 export class PrismaTagRepository implements TagRepository {
   async findMany(): Promise<Tag[]> {
     const tags = await prismaClient.tag.findMany({ orderBy: { name: 'asc' } })
-    return tags.map(this.toDomain)
+    return tags.map(TagMapper.toDomain)
   }
 
   async findById(id: string): Promise<Tag | null> {
     const tag = await prismaClient.tag.findUnique({ where: { id } })
-    return tag ? this.toDomain(tag) : null
+    return tag ? TagMapper.toDomain(tag) : null
+  }
+
+  async findBySlug(slug: string): Promise<Tag | null> {
+    const tag = await prismaClient.tag.findUnique({ where: { slug } })
+    return tag ? TagMapper.toDomain(tag) : null
   }
 
   async save(tag: Tag): Promise<Tag> {
@@ -23,19 +27,10 @@ export class PrismaTagRepository implements TagRepository {
         slug: tag.slug.toString(),
       },
     })
-    return this.toDomain(created)
+    return TagMapper.toDomain(created)
   }
 
   async delete(id: string): Promise<void> {
     await prismaClient.tag.delete({ where: { id } })
-  }
-
-  private toDomain(prismaTag: { id: string; name: string; slug: string; createdAt: Date }): Tag {
-    return new Tag(
-      UUID.from(prismaTag.id),
-      prismaTag.name,
-      Slug.from(prismaTag.slug),
-      prismaTag.createdAt,
-    )
   }
 }
