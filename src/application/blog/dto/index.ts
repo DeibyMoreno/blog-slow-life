@@ -24,6 +24,18 @@ export const UpdatePostSchema = z.object({
 export type CreatePostDTO = z.infer<typeof CreatePostSchema>
 export type UpdatePostDTO = z.infer<typeof UpdatePostSchema>
 
+export const CreateCategorySchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().nullable().optional(),
+})
+export type CreateCategoryDTO = z.infer<typeof CreateCategorySchema>
+
+export const UpdateCategorySchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().nullable().optional(),
+})
+export type UpdateCategoryDTO = z.infer<typeof UpdateCategorySchema>
+
 export const CreateTagSchema = z.object({
   name: z.string().min(1).max(50),
 })

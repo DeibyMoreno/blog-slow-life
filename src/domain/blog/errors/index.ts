@@ -34,3 +34,17 @@ export class TagSlugConflictError extends BusinessRuleViolationError {
     this.code = 'TAG_SLUG_CONFLICT'
   }
 }
+
+export class CategorySlugConflictError extends BusinessRuleViolationError {
+  constructor(slug: string) {
+    super(`A category with slug "${slug}" already exists`)
+    this.code = 'CATEGORY_SLUG_CONFLICT'
+  }
+}
+
+export class CategoryHasPostsError extends BusinessRuleViolationError {
+  constructor(name: string) {
+    super(`Cannot delete category "${name}" because it has associated posts`)
+    this.code = 'CATEGORY_HAS_POSTS'
+  }
+}

@@ -19,6 +19,7 @@ export interface GraphQLContext {
     category: DataLoader<string, unknown>
     tag: DataLoader<string, unknown>
     postsByTagId: DataLoader<string, unknown>
+    postsByCategoryId: DataLoader<string, unknown>
     tagsByPostId: DataLoader<string, unknown>
   }
 }
@@ -73,6 +74,15 @@ export function createContextFactory(params: ContextFactoryParams) {
         })
         return tagIds.map((tagId) =>
           posts.filter((p) => p.tags.some((t) => t.id === tagId)),
+        )
+      }),
+      postsByCategoryId: new DataLoader<string, unknown>(async (categoryIds) => {
+        const posts = await params.prisma.post.findMany({
+          where: { category: { id: { in: [...categoryIds] } }, deletedAt: null },
+          include: { category: { select: { id: true } } },
+        })
+        return categoryIds.map((categoryId) =>
+          posts.filter((p) => p.categoryId === categoryId),
         )
       }),
       tagsByPostId: new DataLoader<string, unknown>(async (postIds) => {

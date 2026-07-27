@@ -12,6 +12,10 @@ import { DeletePostUseCase } from '../../application/blog/use-cases/delete-post.
 import { CreateTagUseCase } from '../../application/blog/use-cases/create-tag.use-case.js'
 import { DeleteTagUseCase } from '../../application/blog/use-cases/delete-tag.use-case.js'
 import { GetTagsUseCase } from '../../application/blog/use-cases/get-tags.use-case.js'
+import { CreateCategoryUseCase } from '../../application/blog/use-cases/create-category.use-case.js'
+import { UpdateCategoryUseCase } from '../../application/blog/use-cases/update-category.use-case.js'
+import { DeleteCategoryUseCase } from '../../application/blog/use-cases/delete-category.use-case.js'
+import { GetCategoriesUseCase } from '../../application/blog/use-cases/get-categories.use-case.js'
 import { CreateUserUseCase } from '../../application/administration/use-cases/create-user.use-case.js'
 import { GetMeUseCase } from '../../application/administration/use-cases/get-me.use-case.js'
 import { LoginUseCase } from '../../application/administration/use-cases/login.use-case.js'
@@ -24,7 +28,7 @@ export class Container {
 
   private readonly postRepository = new PrismaPostRepository()
   private readonly userRepository = new PrismaUserRepository()
-  private readonly categoryRepository = new PrismaCategoryRepository()
+  private readonly _categoryRepository = new PrismaCategoryRepository()
   private readonly _tagRepository = new PrismaTagRepository()
   private readonly roleRepository = new PrismaRoleRepository()
   private readonly sessionRepository = new PrismaSessionRepository()
@@ -38,6 +42,10 @@ export class Container {
       Container.instance = new Container()
     }
     return Container.instance
+  }
+
+  get categoryRepository() {
+    return this._categoryRepository
   }
 
   get tagRepository() {
@@ -95,6 +103,22 @@ export class Container {
 
   get getTagsUseCase() {
     return new GetTagsUseCase(this._tagRepository)
+  }
+
+  get createCategoryUseCase() {
+    return new CreateCategoryUseCase(this._categoryRepository)
+  }
+
+  get updateCategoryUseCase() {
+    return new UpdateCategoryUseCase(this._categoryRepository)
+  }
+
+  get deleteCategoryUseCase() {
+    return new DeleteCategoryUseCase(this._categoryRepository)
+  }
+
+  get getCategoriesUseCase() {
+    return new GetCategoriesUseCase(this._categoryRepository)
   }
 }
 

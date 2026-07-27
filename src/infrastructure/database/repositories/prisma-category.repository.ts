@@ -16,16 +16,31 @@ export class PrismaCategoryRepository implements CategoryRepository {
     return category ? CategoryMapper.toDomain(category) : null
   }
 
+  async findBySlug(slug: string): Promise<Category | null> {
+    const category = await prismaClient.category.findUnique({ where: { slug } })
+    return category ? CategoryMapper.toDomain(category) : null
+  }
+
   async save(category: Category): Promise<Category> {
     const created = await prismaClient.category.create({
       data: {
         id: category.id.toString(),
-        name: category.name,
-        slug: category.slug.toString(),
-        description: category.description,
+        ...CategoryMapper.toPrismaData(category),
       },
     })
     return CategoryMapper.toDomain(created)
+  }
+
+  async update(category: Category): Promise<Category> {
+    const updated = await prismaClient.category.update({
+      where: { id: category.id.toString() },
+      data: CategoryMapper.toPrismaData(category),
+    })
+    return CategoryMapper.toDomain(updated)
+  }
+
+  async countPosts(id: string): Promise<number> {
+    return prismaClient.post.count({ where: { categoryId: id, deletedAt: null } })
   }
 
   async delete(id: string): Promise<void> {

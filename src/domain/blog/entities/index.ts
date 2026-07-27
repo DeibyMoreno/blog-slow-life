@@ -55,7 +55,7 @@ export class Category extends BaseEntity {
     createdAt: Date | undefined,
     updatedAt: Date | undefined,
     public name: string,
-    public slug: Slug,
+    public slug: Slug | string,
     public description: string | null,
   ) {
     super(id, createdAt, updatedAt)

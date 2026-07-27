@@ -13,6 +13,11 @@ input CreateCategoryInput {
   description: String
 }
 
+input UpdateCategoryInput {
+  name: String
+  description: String
+}
+
 extend type Query {
   categories: [Category!]!
   category(id: UUID): Category
@@ -20,4 +25,6 @@ extend type Query {
 
 extend type Mutation {
   createCategory(input: CreateCategoryInput!): Category!
+  updateCategory(id: UUID!, input: UpdateCategoryInput!): Category!
+  deleteCategory(id: UUID!): Boolean!
 }

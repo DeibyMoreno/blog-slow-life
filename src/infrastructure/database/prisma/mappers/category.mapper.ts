@@ -10,8 +10,16 @@ export class CategoryMapper {
       prismaCategory.createdAt,
       prismaCategory.updatedAt,
       prismaCategory.name,
-      Slug.from(prismaCategory.slug),
+      Slug.from(prismaCategory.slug).toString(),
       prismaCategory.description,
     )
+  }
+
+  static toPrismaData(category: Category): { name: string; slug: string; description: string | null } {
+    return {
+      name: category.name,
+      slug: category.slug.toString(),
+      description: category.description,
+    }
   }
 }

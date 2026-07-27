@@ -1,36 +1,37 @@
 import type { GraphQLContext } from '../../../context.js'
-import { PrismaCategoryRepository } from '../../../../../infrastructure/database/repositories/prisma-category.repository.js'
-import { Category } from '../../../../../domain/blog/entities/index.js'
-import { Slug } from '../../../../../domain/shared/value-objects/slug.vo.js'
+import { container } from '../../../../../infrastructure/container/container.js'
 
-const repo = new PrismaCategoryRepository()
+const {
+  createCategoryUseCase,
+  updateCategoryUseCase,
+  deleteCategoryUseCase,
+  getCategoriesUseCase,
+  categoryRepository,
+} = container
 
 export const categoryResolvers = {
   Query: {
-    categories: async () => repo.findMany(),
-    category: async (_: unknown, args: { id: string }) => repo.findById(args.id),
+    categories: async () => getCategoriesUseCase.execute(),
+    category: async (_: unknown, args: { id: string }) => categoryRepository.findById(args.id),
   },
   Mutation: {
-    createCategory: async (
+    createCategory: async (_: unknown, args: { input: { name: string; description?: string | null } }) => {
+      return createCategoryUseCase.execute(args.input)
+    },
+    updateCategory: async (
       _: unknown,
-      args: { input: { name: string; description?: string | null } },
+      args: { id: string; input: { name?: string; description?: string | null } },
     ) => {
-      const category = new Category(
-        undefined,
-        undefined,
-        undefined,
-        args.input.name,
-        Slug.create(args.input.name),
-        args.input.description ?? null,
-      )
-      return repo.save(category)
+      return updateCategoryUseCase.execute(args.id, args.input)
+    },
+    deleteCategory: async (_: unknown, args: { id: string }) => {
+      await deleteCategoryUseCase.execute(args.id)
+      return true
     },
   },
   Category: {
     posts: async (parent: { id: string }, _args: unknown, ctx: GraphQLContext) => {
-      return ctx.prisma.post.findMany({
-        where: { categoryId: parent.id, deletedAt: null },
-      })
+      return ctx.loaders.postsByCategoryId.load(parent.id.toString())
     },
   },
 }
