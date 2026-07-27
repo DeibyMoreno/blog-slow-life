@@ -68,10 +68,7 @@ export class ForbiddenError extends ApplicationError {
 }
 
 export class ValidationError extends ApplicationError {
-  code = 'VALIDATION_ERROR'
-  statusCode = 400
-
   constructor(message: string) {
-    super(message)
+    super(message, 400, 'VALIDATION_ERROR')
   }
 }
