@@ -11,7 +11,7 @@ export class PostMapper {
       prismaPost.createdAt,
       prismaPost.updatedAt,
       prismaPost.title,
-      Slug.from(prismaPost.slug),
+      Slug.from(prismaPost.slug).toString(),
       prismaPost.content,
       prismaPost.excerpt,
       prismaPost.coverImage,

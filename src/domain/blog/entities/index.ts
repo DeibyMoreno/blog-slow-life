@@ -9,7 +9,7 @@ export class Post extends BaseEntity {
     createdAt: Date | undefined,
     updatedAt: Date | undefined,
     public title: string,
-    public slug: Slug,
+    public slug: Slug | string,
     public content: string | null,
     public excerpt: string | null,
     public coverImage: string | null,

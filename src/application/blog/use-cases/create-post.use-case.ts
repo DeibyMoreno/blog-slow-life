@@ -10,7 +10,7 @@ import { ValidationError } from '../../../domain/shared/errors/index.js'
 export class CreatePostUseCase {
   constructor(private readonly postRepository: PostRepository) {}
 
-  async execute(input: CreatePostDTO) {
+  async execute(input: CreatePostDTO, authorId: string) {
     const parsed = CreatePostSchema.safeParse(input)
     if (!parsed.success) {
       throw new ValidationError(parsed.error.errors.map((e) => e.message).join(', '))
@@ -34,12 +34,12 @@ export class CreatePostUseCase {
       data.excerpt ?? null,
       data.coverImage ?? null,
       data.status ?? PostStatus.DRAFT,
-      UUID.from(data.categoryId ?? '00000000-0000-0000-0000-000000000000'),
+      UUID.from(authorId),
       data.categoryId ? UUID.from(data.categoryId) : null,
       data.status === PostStatus.PUBLISHED ? new Date() : null,
       null,
     )
 
-    return this.postRepository.save(post)
+    return this.postRepository.save(post, data.tagIds)
   }
 }

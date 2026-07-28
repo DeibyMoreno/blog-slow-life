@@ -26,6 +26,6 @@ export class UpdatePostUseCase {
 
     post.touch()
 
-    return this.postRepository.update(post)
+    return this.postRepository.update(post, data.tagIds)
   }
 }

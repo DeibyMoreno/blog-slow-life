@@ -24,7 +24,7 @@ extend type Query {
 }
 
 extend type Mutation {
-  createCategory(input: CreateCategoryInput!): Category!
-  updateCategory(id: UUID!, input: UpdateCategoryInput!): Category!
-  deleteCategory(id: UUID!): Boolean!
+  createCategory(input: CreateCategoryInput!): Category! @auth(role: ADMIN)
+  updateCategory(id: UUID!, input: UpdateCategoryInput!): Category! @auth(role: ADMIN)
+  deleteCategory(id: UUID!): Boolean! @auth(role: ADMIN)
 }

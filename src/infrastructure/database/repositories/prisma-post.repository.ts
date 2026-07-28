@@ -33,17 +33,25 @@ export class PrismaPostRepository implements PostRepository {
     return post ? PostMapper.toDomain(post) : null
   }
 
-  async save(post: Post): Promise<Post> {
+  async save(post: Post, tagIds?: string[]): Promise<Post> {
     const data = PostMapper.toPrisma(post)
-    const created = await prismaClient.post.create({ data })
+    const created = await prismaClient.post.create({
+      data: {
+        ...data,
+        ...(tagIds?.length ? { tags: { connect: tagIds.map((id) => ({ id })) } } : {}),
+      },
+    })
     return PostMapper.toDomain(created)
   }
 
-  async update(post: Post): Promise<Post> {
+  async update(post: Post, tagIds?: string[]): Promise<Post> {
     const data = PostMapper.toPrisma(post)
     const updated = await prismaClient.post.update({
       where: { id: post.id.toString() },
-      data,
+      data: {
+        ...data,
+        ...(tagIds ? { tags: { set: tagIds.map((id) => ({ id })) } } : {}),
+      },
     })
     return PostMapper.toDomain(updated)
   }

@@ -1,23 +1,21 @@
 import type { GraphQLContext } from '../../../context.js'
 import type { PostStatus } from '../../../../../domain/shared/types/index.js'
-import { PrismaPostRepository } from '../../../../../infrastructure/database/repositories/prisma-post.repository.js'
-import { CreatePostUseCase } from '../../../../../application/blog/use-cases/create-post.use-case.js'
-import { GetPostsUseCase } from '../../../../../application/blog/use-cases/get-posts.use-case.js'
-import { GetPostBySlugUseCase } from '../../../../../application/blog/use-cases/get-post-by-slug.use-case.js'
-import { UpdatePostUseCase } from '../../../../../application/blog/use-cases/update-post.use-case.js'
-import { DeletePostUseCase } from '../../../../../application/blog/use-cases/delete-post.use-case.js'
+import type { CreatePostDTO, UpdatePostDTO } from '../../../../../application/blog/dto/index.js'
+import { container } from '../../../../../infrastructure/container/container.js'
 
-const repo = new PrismaPostRepository()
-const createPost = new CreatePostUseCase(repo)
-const getPosts = new GetPostsUseCase(repo)
-const getPostBySlug = new GetPostBySlugUseCase(repo)
-const updatePost = new UpdatePostUseCase(repo)
-const deletePost = new DeletePostUseCase(repo)
+const {
+  createPostUseCase,
+  getPostsUseCase,
+  getPostBySlugUseCase,
+  updatePostUseCase,
+  deletePostUseCase,
+  postRepository,
+} = container
 
 export const postResolvers = {
   Query: {
     posts: async (_: unknown, args: { limit?: number; offset?: number; status?: string }, _ctx: GraphQLContext) => {
-      const { posts } = await getPosts.execute({
+      const { posts } = await getPostsUseCase.execute({
         limit: args.limit,
         offset: args.offset,
         status: args.status as PostStatus | undefined,
@@ -25,38 +23,42 @@ export const postResolvers = {
       return posts
     },
     post: async (_: unknown, args: { id: string }, _ctx: GraphQLContext) => {
-      return repo.findById(args.id)
+      return postRepository.findById(args.id)
     },
     postBySlug: async (_: unknown, args: { slug: string }, _ctx: GraphQLContext) => {
-      return getPostBySlug.execute(args.slug)
+      return getPostBySlugUseCase.execute(args.slug)
     },
   },
   Mutation: {
-    createPost: async (_: unknown, args: { input: Parameters<CreatePostUseCase['execute']>[0] }, _ctx: GraphQLContext) => {
-      return createPost.execute(args.input)
+    createPost: async (
+      _: unknown,
+      args: { input: CreatePostDTO },
+      ctx: GraphQLContext,
+    ) => {
+      return createPostUseCase.execute(args.input, ctx.user!.id.toString())
     },
     updatePost: async (
       _: unknown,
-      args: { id: string; input: Parameters<UpdatePostUseCase['execute']>[1] },
+      args: { id: string; input: UpdatePostDTO },
       _ctx: GraphQLContext,
     ) => {
-      return updatePost.execute(args.id, args.input)
+      return updatePostUseCase.execute(args.id, args.input)
     },
     deletePost: async (_: unknown, args: { id: string }, _ctx: GraphQLContext) => {
-      await deletePost.execute(args.id)
+      await deletePostUseCase.execute(args.id)
       return true
     },
   },
   Post: {
     author: async (parent: { authorId: string }, _args: unknown, ctx: GraphQLContext) => {
-      return ctx.loaders.user.load(parent.authorId)
+      return ctx.loaders.user.load(parent.authorId.toString())
     },
     category: async (parent: { categoryId: string | null }, _args: unknown, ctx: GraphQLContext) => {
       if (!parent.categoryId) return null
-      return ctx.loaders.category.load(parent.categoryId)
+      return ctx.loaders.category.load(parent.categoryId.toString())
     },
     tags: async (parent: { id: string }, _args: unknown, ctx: GraphQLContext) => {
-      return ctx.loaders.tagsByPostId.load(parent.id)
+      return ctx.loaders.tagsByPostId.load(parent.id.toString())
     },
   },
 }

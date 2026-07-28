@@ -47,7 +47,7 @@ extend type Query {
 }
 
 extend type Mutation {
-  createPost(input: CreatePostInput!): Post!
-  updatePost(id: UUID!, input: UpdatePostInput!): Post!
-  deletePost(id: UUID!): Boolean!
+  createPost(input: CreatePostInput!): Post! @auth(role: ADMIN)
+  updatePost(id: UUID!, input: UpdatePostInput!): Post! @auth(role: ADMIN)
+  deletePost(id: UUID!): Boolean! @auth(role: ADMIN)
 }

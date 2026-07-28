@@ -26,7 +26,7 @@ import { CreateRoleUseCase } from '@application/administration/use-cases/create-
 export class Container {
   private static instance: Container | null = null
 
-  private readonly postRepository = new PrismaPostRepository()
+  private readonly _postRepository = new PrismaPostRepository()
   private readonly userRepository = new PrismaUserRepository()
   private readonly _categoryRepository = new PrismaCategoryRepository()
   private readonly _tagRepository = new PrismaTagRepository()
@@ -44,6 +44,10 @@ export class Container {
     return Container.instance
   }
 
+  get postRepository() {
+    return this._postRepository
+  }
+
   get categoryRepository() {
     return this._categoryRepository
   }
@@ -53,23 +57,23 @@ export class Container {
   }
 
   get createPostUseCase() {
-    return new CreatePostUseCase(this.postRepository)
+    return new CreatePostUseCase(this._postRepository)
   }
 
   get getPostsUseCase() {
-    return new GetPostsUseCase(this.postRepository)
+    return new GetPostsUseCase(this._postRepository)
   }
 
   get getPostBySlugUseCase() {
-    return new GetPostBySlugUseCase(this.postRepository)
+    return new GetPostBySlugUseCase(this._postRepository)
   }
 
   get updatePostUseCase() {
-    return new UpdatePostUseCase(this.postRepository)
+    return new UpdatePostUseCase(this._postRepository)
   }
 
   get deletePostUseCase() {
-    return new DeletePostUseCase(this.postRepository)
+    return new DeletePostUseCase(this._postRepository)
   }
 
   get createUserUseCase() {
