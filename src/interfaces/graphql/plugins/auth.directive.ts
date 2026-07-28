@@ -16,7 +16,8 @@ export function authDirectiveTransformer(schema: GraphQLSchema): GraphQLSchema {
           throw new UnauthorizedError('Authentication required');
         }
 
-        if (authDirective.role && context.user.role?.name !== authDirective.role) {
+        const allowedRoles = authDirective.roles as string[] | undefined;
+        if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(context.user.role?.name)) {
           throw new UnauthorizedError('Insufficient permissions');
         }
 

@@ -27,5 +27,5 @@ extend type Query {
 }
 
 extend type Mutation {
-  createRole(input: CreateRoleInput!): Role!
+  createRole(input: CreateRoleInput!): Role! @auth(roles: [ADMIN])
 }

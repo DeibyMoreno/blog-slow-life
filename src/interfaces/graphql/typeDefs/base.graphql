@@ -4,7 +4,7 @@ enum AuthRole {
   VIEWER
 }
 
-directive @auth(role: AuthRole) on FIELD_DEFINITION
+directive @auth(roles: [AuthRole]) on FIELD_DEFINITION
 
 scalar DateTime
 scalar UUID

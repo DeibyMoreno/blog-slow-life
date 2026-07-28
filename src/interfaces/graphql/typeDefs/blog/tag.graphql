@@ -18,6 +18,6 @@ extend type Query {
 }
 
 extend type Mutation {
-  createTag(input: CreateTagInput!): Tag! @auth(role: EDITOR)
-  deleteTag(id: UUID!): Boolean! @auth(role: ADMIN)
+  createTag(input: CreateTagInput!): Tag! @auth(roles: [ADMIN, EDITOR])
+  deleteTag(id: UUID!): Boolean! @auth(roles: [ADMIN])
 }
