@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json && copyfiles -u 1 \"src/**/*.graphql\" dist",
     "start": "node dist/index.js",
     "lint": "eslint src/ --ext .ts",
     "lint:fix": "eslint src/ --ext .ts --fix",
@@ -60,6 +60,7 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "copyfiles": "^2.4.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "husky": "^9.0.0",
@@ -67,6 +68,7 @@
     "pino-pretty": "^13.0.0",
     "prettier": "^3.4.0",
     "prisma": "^7.8.0",
+    "tsc-alias": "^1.9.1",
     "tsx": "^4.0.0",
     "typescript": "^5.6.0",
     "vitest": "^2.0.0"
