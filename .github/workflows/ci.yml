@@ -2,34 +2,39 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   NODE_VERSION: '22'
+  DATABASE_URL: postgresql://test:test@localhost:5432/slowlife_test
 
 jobs:
   lint-and-typecheck:
     name: Lint & TypeCheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - run: pnpm install
-      - run: pnpm prisma generate
       - run: pnpm lint
       - run: pnpm typecheck
 
   test:
     name: Test
     runs-on: ubuntu-latest
+    needs: lint-and-typecheck
+    env:
+      JWT_SECRET: test-jwt-secret
+      REFRESH_TOKEN_SECRET: test-refresh-secret
     services:
       postgres:
         image: postgres:16-alpine
@@ -45,37 +50,26 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - run: pnpm install
-      - run: pnpm prisma generate
-      - run: pnpm prisma migrate deploy
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/slowlife_test
-      - run: pnpm test
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/slowlife_test
-          JWT_SECRET: test-jwt-secret
-          REFRESH_TOKEN_SECRET: test-refresh-secret
+      - name: Apply migrations
+        run: pnpm prisma migrate deploy
+      - name: Run tests
+        run: pnpm test
+      - name: Write job summary
+        run: |
+          echo "## Tests en CI" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Commit: ${{ github.sha }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Rama: ${{ github.ref }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Resultado: todos los tests pasaron" >> "$GITHUB_STEP_SUMMARY"
 
   build:
     name: Build
     runs-on: ubuntu-latest
+    needs: lint-and-typecheck
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - run: pnpm install
-      - run: pnpm prisma generate
       - run: pnpm build
