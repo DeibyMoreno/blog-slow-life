@@ -3,9 +3,9 @@
 ## Commands
 
 ```bash
-pnpm install              # install deps (pnpm, NOT npm)
+pnpm install              # install deps (pnpm, NOT npm); runs husky prepare
 pnpm dev                  # dev server (tsx watch, port 4000)
-pnpm build                # tsc -p tsconfig.build.json → dist/
+pnpm build                # tsc -p tsconfig.build.json + tsc-alias + copyfiles → dist/
 pnpm start                # node dist/index.js
 
 pnpm lint                 # ESLint src/
@@ -24,7 +24,7 @@ pnpm db:seed              # tsx prisma/seed.ts
 ```
 
 **Verification order:** `pnpm lint → pnpm typecheck → pnpm test`
-**Pre-commit hook** runs `npm test` (note: uses npm, not pnpm).
+**Pre-commit hook** runs `npm test` (note: uses npm, not pnpm); commit-msg hook runs commitlint.
 
 ## Architecture (Hexagonal + DDD)
 
@@ -34,10 +34,11 @@ interfaces → application → domain
 ```
 
 Layer responsibilities:
+- **`src/config/`** — Env loading, module configs (server, database, logger).
 - **`src/domain/`** — Entities, value objects, enums, errors. Zero external deps.
 - **`src/application/`** — Use cases + repository port interfaces (`shared/ports/outbound/`). No infra imports.
-- **`src/infrastructure/`** — Prisma repositories, mappers, config, auth, logging, DI container.
-- **`src/interfaces/`** — GraphQL (resolvers, typeDefs, context, scalars, modules) + HTTP (health).
+- **`src/infrastructure/`** — Prisma repositories, mappers, config (HTTP middleware), auth (JWT, password), logging, DI container.
+- **`src/interfaces/`** — GraphQL (resolvers, typeDefs, context, scalars, plugins, modules) + HTTP (health).
 
 ### Path aliases (tsconfig + vitest resolve.alias)
 
@@ -47,14 +48,16 @@ Layer responsibilities:
 
 - **graphql-yoga** with `@envelop/graphql-jit`
 - **Schema-first:** `.graphql` files in `src/interfaces/graphql/typeDefs/` loaded by `@graphql-tools/load-files`
-- **Modules:** `src/interfaces/graphql/modules/{blog,administration}/` each have `resolvers/`, `typeDefs/`, `loaders/`
+- **Modules:** `src/interfaces/graphql/modules/{blog,administration}/` each have `resolvers/`, `typeDefs/`, `loaders/` (per-module `typeDefs/` and `loaders/` are unused; actual typeDefs live in `src/interfaces/graphql/typeDefs/` and loaders are constructed inline in `context.ts`)
 - **Wiring:** `src/interfaces/graphql/schema.ts` merges typeDefs and spreads resolvers from `base.resolver.ts` + module index files
 - **Context:** `src/interfaces/graphql/context.ts` — provides `requestId`, `logger`, `prisma`, `user`, `loaders`
-- **DataLoaders** (user, post, category) in context for N+1 prevention
+- **DataLoaders** (user, category, tag, postsByTagId, postsByCategoryId, tagsByPostId) in context for N+1 prevention
+- **Plugins:** `src/interfaces/graphql/plugins/` — auth directive, error mask, request-id
+- **Scalars:** `src/interfaces/graphql/scalars/` — DateTime, Email, UUID
 
 ### DI Container
 
-`src/infrastructure/container/container.ts` — Singleton `Container` class. **Resolvers currently bypass it** and instantiate repos/use-cases directly. Container is the intended pattern.
+`src/infrastructure/container/container.ts` — Singleton `Container` class with wired use cases and repositories. **All resolvers use the container** to access use cases.
 
 ### Prisma
 
@@ -95,7 +98,6 @@ Conventional commits. **Scopes (required):**
 
 ## Gotchas
 
-- **Dockerfile is broken:** references `package-lock.json` but project uses pnpm (`pnpm-lock.yaml`)
-- **Auth is stubbed:** `login()`, `refreshToken()`, `logout()` throw "Not implemented yet"
-- **OpenCode agents** in `.opencode/agents/` reference "Movies & Series Platform" and "Awilix DI" — these are stale/outdated for this project
+- **Dockerfile is broken:** `docker/Dockerfile` references `package-lock.json` and uses `npm ci`/`npm run build` but project uses pnpm (`pnpm-lock.yaml`)
+- **Auth is partially stubbed:** `login()` is implemented (delegates to container), but `refreshToken()` and `logout()` throw "Not implemented yet"
 - **Pre-commit** runs `npm test` (not `pnpm test`) — may cause issues if npm isn't available
