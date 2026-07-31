@@ -8,13 +8,13 @@ declare global {
 }
 
 function createPrismaClient() {
-  const adapter = new PrismaPg({ connectionString: env.DATABASE_URL })
+  const adapter = new PrismaPg({ connectionString: env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
   return new PrismaClient({
     adapter,
-    log:
+    /* log:
       env.NODE_ENV === 'development'
         ? [{ level: 'query', emit: 'event' }, { level: 'error', emit: 'stdout' }, { level: 'warn', emit: 'stdout' }]
-        : [{ level: 'error', emit: 'stdout' }, { level: 'warn', emit: 'stdout' }],
+        : [{ level: 'error', emit: 'stdout' }, { level: 'warn', emit: 'stdout' }], */
   })
 }
 
