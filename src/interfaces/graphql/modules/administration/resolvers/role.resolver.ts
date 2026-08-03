@@ -1,13 +1,10 @@
-import { PrismaRoleRepository } from '../../../../../infrastructure/database/repositories/prisma-role.repository.js'
 import type { Role } from '../../../../../domain/administration/entities/index.js'
 import { container } from '@infrastructure/container/container.js'
 
-const repo = new PrismaRoleRepository()
-
 export const roleResolvers = {
   Query: {
-    roles: async () => repo.findMany(),
-    role: async (_: unknown, args: { id: string }) => repo.findById(args.id),
+    roles: async () => container.roleRepository.findMany(),
+    role: async (_: unknown, args: { id: string }) => container.roleRepository.findById(args.id),
   },
   Mutation: {
     createRole: async (

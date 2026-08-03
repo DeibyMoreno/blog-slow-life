@@ -21,19 +21,24 @@ import { GetMeUseCase } from '../../application/administration/use-cases/get-me.
 import { LoginUseCase } from '../../application/administration/use-cases/login.use-case.js'
 import { PasswordService } from '../auth/password.service.js'
 import { JWTService } from '../auth/jwt.service.js'
+import { InMemoryEventBus } from '../events/in-memory-event-bus.js'
 import { CreateRoleUseCase } from '@application/administration/use-cases/create-role.use-case.js'
+import type { PasswordHasher } from '@application/shared/ports/outbound/password-hasher.port.js'
+import type { TokenService } from '@application/shared/ports/outbound/token-service.port.js'
+import type { EventBus } from '@application/shared/ports/outbound/event-bus.port.js'
 
 export class Container {
   private static instance: Container | null = null
 
   private readonly _postRepository = new PrismaPostRepository()
-  private readonly userRepository = new PrismaUserRepository()
+  private readonly _userRepository = new PrismaUserRepository()
   private readonly _categoryRepository = new PrismaCategoryRepository()
   private readonly _tagRepository = new PrismaTagRepository()
-  private readonly roleRepository = new PrismaRoleRepository()
-  private readonly sessionRepository = new PrismaSessionRepository()
-  private readonly passwordService = new PasswordService()
-  private readonly jwtService = new JWTService()
+  private readonly _roleRepository = new PrismaRoleRepository()
+  private readonly _sessionRepository = new PrismaSessionRepository()
+  private readonly _passwordService: PasswordHasher = new PasswordService()
+  private readonly _jwtService: TokenService = new JWTService()
+  private readonly _eventBus: EventBus = new InMemoryEventBus()
 
   private constructor() { }
 
@@ -44,8 +49,16 @@ export class Container {
     return Container.instance
   }
 
+  get eventBus(): EventBus {
+    return this._eventBus
+  }
+
   get postRepository() {
     return this._postRepository
+  }
+
+  get userRepository() {
+    return this._userRepository
   }
 
   get categoryRepository() {
@@ -56,8 +69,12 @@ export class Container {
     return this._tagRepository
   }
 
+  get roleRepository() {
+    return this._roleRepository
+  }
+
   get createPostUseCase() {
-    return new CreatePostUseCase(this._postRepository)
+    return new CreatePostUseCase(this._postRepository, this._eventBus)
   }
 
   get getPostsUseCase() {
@@ -69,32 +86,33 @@ export class Container {
   }
 
   get updatePostUseCase() {
-    return new UpdatePostUseCase(this._postRepository)
+    return new UpdatePostUseCase(this._postRepository, this._eventBus)
   }
 
   get deletePostUseCase() {
-    return new DeletePostUseCase(this._postRepository)
+    return new DeletePostUseCase(this._postRepository, this._eventBus)
   }
 
   get createUserUseCase() {
-    return new CreateUserUseCase(this.userRepository, this.passwordService)
+    return new CreateUserUseCase(this._userRepository, this._passwordService, this._eventBus)
   }
 
   get getMeUseCase() {
-    return new GetMeUseCase(this.userRepository)
+    return new GetMeUseCase(this._userRepository)
   }
 
   get loginUseCase() {
     return new LoginUseCase(
-      this.userRepository,
-      this.sessionRepository,
-      this.passwordService,
-      this.jwtService,
+      this._userRepository,
+      this._sessionRepository,
+      this._passwordService,
+      this._jwtService,
+      this._eventBus,
     )
   }
 
   get createRoleUseCase() {
-    return new CreateRoleUseCase(this.roleRepository)
+    return new CreateRoleUseCase(this._roleRepository)
   }
 
   get createTagUseCase() {

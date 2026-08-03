@@ -22,7 +22,7 @@ export class CreateTagUseCase {
       throw new TagSlugConflictError(slug.toString())
     }
 
-    const tag = new Tag(undefined, undefined, undefined, data.name, slug)
+    const tag = Tag.create({ name: data.name, slug })
 
     return this.tagRepository.save(tag)
   }

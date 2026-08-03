@@ -1,4 +1,5 @@
 import type { PostRepository } from '../../shared/ports/outbound/post.repository.js'
+import type { EventBus } from '../../shared/ports/outbound/event-bus.port.js'
 import { Post } from '../../../domain/blog/entities/index.js'
 import { UUID } from '../../../domain/shared/value-objects/uuid.vo.js'
 import { Slug } from '../../../domain/shared/value-objects/slug.vo.js'
@@ -8,7 +9,10 @@ import { CreatePostSchema, type CreatePostDTO } from '../dto/index.js'
 import { ValidationError } from '../../../domain/shared/errors/index.js'
 
 export class CreatePostUseCase {
-  constructor(private readonly postRepository: PostRepository) {}
+  constructor(
+    private readonly postRepository: PostRepository,
+    private readonly eventBus: EventBus,
+  ) {}
 
   async execute(input: CreatePostDTO, authorId: string) {
     const parsed = CreatePostSchema.safeParse(input)
@@ -24,22 +28,21 @@ export class CreatePostUseCase {
       throw new PostSlugConflictError(slug.toString())
     }
 
-    const post = new Post(
-      undefined,
-      undefined,
-      undefined,
-      data.title,
+    const post = Post.create({
+      title: data.title,
       slug,
-      data.content ?? null,
-      data.excerpt ?? null,
-      data.coverImage ?? null,
-      data.status ?? PostStatus.DRAFT,
-      UUID.from(authorId),
-      data.categoryId ? UUID.from(data.categoryId) : null,
-      data.status === PostStatus.PUBLISHED ? new Date() : null,
-      null,
-    )
+      content: data.content ?? null,
+      excerpt: data.excerpt ?? null,
+      coverImage: data.coverImage ?? null,
+      status: data.status ?? PostStatus.DRAFT,
+      authorId: UUID.from(authorId),
+      categoryId: data.categoryId ? UUID.from(data.categoryId) : null,
+    })
 
-    return this.postRepository.save(post, data.tagIds)
+    const events = post.clearEvents()
+    const saved = await this.postRepository.save(post, data.tagIds)
+    this.eventBus.publishAll(events)
+
+    return saved
   }
 }

@@ -1,10 +1,4 @@
-import { z } from 'zod'
-
-const slugSchema = z
-  .string()
-  .min(1)
-  .max(200)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug must be kebab-case')
+const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 export class Slug {
   private constructor(private readonly _value: string) { }
@@ -18,19 +12,27 @@ export class Slug {
       .replace(/^-+|-+$/g, '')
       .replace(/-+/g, '-')
 
-    const result = slugSchema.safeParse(slug)
-    if (!result.success) {
+    if (slug.length < 1 || slug.length > 200) {
       throw new InvalidSlugError(value)
     }
-    return new Slug(result.data)
+
+    if (!SLUG_REGEX.test(slug)) {
+      throw new InvalidSlugError(value)
+    }
+
+    return new Slug(slug)
   }
 
   static from(value: string): Slug {
-    const result = slugSchema.safeParse(value)
-    if (!result.success) {
+    if (value.length < 1 || value.length > 200) {
       throw new InvalidSlugError(value)
     }
-    return new Slug(result.data)
+
+    if (!SLUG_REGEX.test(value)) {
+      throw new InvalidSlugError(value)
+    }
+
+    return new Slug(value)
   }
 
   get value(): string {

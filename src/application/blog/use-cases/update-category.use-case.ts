@@ -28,12 +28,11 @@ export class UpdateCategoryUseCase {
         throw new CategorySlugConflictError(slug.toString())
       }
 
-      category.name = data.name
-      category.slug = slug
+      category.rename(data.name, slug)
     }
 
     if (data.description !== undefined) {
-      category.description = data.description
+      category.changeDescription(data.description)
     }
 
     return this.categoryRepository.update(category)

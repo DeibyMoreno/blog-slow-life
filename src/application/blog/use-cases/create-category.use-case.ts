@@ -23,14 +23,11 @@ export class CreateCategoryUseCase {
       throw new CategorySlugConflictError(slug.toString())
     }
 
-    const category = new Category(
-      undefined,
-      undefined,
-      undefined,
-      data.name,
+    const category = Category.create({
+      name: data.name,
       slug,
-      data.description ?? null,
-    )
+      description: data.description ?? null,
+    })
 
     return this.categoryRepository.save(category)
   }

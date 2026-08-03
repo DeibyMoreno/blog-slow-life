@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { env } from '../../config/env.js'
+import type { TokenService } from '../../application/shared/ports/outbound/token-service.port.js'
 
 const JWT_SECRET = new TextEncoder().encode(env.JWT_SECRET)
 const REFRESH_SECRET = new TextEncoder().encode(env.REFRESH_TOKEN_SECRET)
@@ -14,7 +15,7 @@ export interface RefreshTokenPayload {
   jti: string
 }
 
-export class JWTService {
+export class JWTService implements TokenService {
   async signAccessToken(userId: string, role: string): Promise<string> {
     return new SignJWT({ sub: userId, role })
       .setProtectedHeader({ alg: 'HS256' })

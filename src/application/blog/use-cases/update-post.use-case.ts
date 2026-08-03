@@ -1,10 +1,15 @@
 import type { PostRepository } from '../../shared/ports/outbound/post.repository.js'
+import type { EventBus } from '../../shared/ports/outbound/event-bus.port.js'
 import { PostNotFoundError } from '../../../domain/blog/errors/index.js'
 import { UpdatePostSchema, type UpdatePostDTO } from '../dto/index.js'
 import { ValidationError } from '../../../domain/shared/errors/index.js'
+import { UUID } from '../../../domain/shared/value-objects/uuid.vo.js'
 
 export class UpdatePostUseCase {
-  constructor(private readonly postRepository: PostRepository) {}
+  constructor(
+    private readonly postRepository: PostRepository,
+    private readonly eventBus: EventBus,
+  ) {}
 
   async execute(id: string, input: UpdatePostDTO) {
     const parsed = UpdatePostSchema.safeParse(input)
@@ -18,14 +23,19 @@ export class UpdatePostUseCase {
     }
 
     const data = parsed.data
-    if (data.title !== undefined) post.title = data.title
-    if (data.content !== undefined) post.content = data.content
-    if (data.excerpt !== undefined) post.excerpt = data.excerpt
-    if (data.coverImage !== undefined) post.coverImage = data.coverImage
-    if (data.status !== undefined) post.status = data.status
+    if (data.title !== undefined) post.changeTitle(data.title)
+    if (data.content !== undefined) post.changeContent(data.content)
+    if (data.excerpt !== undefined) post.changeExcerpt(data.excerpt)
+    if (data.coverImage !== undefined) post.changeCoverImage(data.coverImage)
+    if (data.status !== undefined) post.changeStatus(data.status)
+    if (data.categoryId !== undefined) {
+      post.changeCategory(data.categoryId ? UUID.from(data.categoryId) : null)
+    }
 
-    post.touch()
+    const events = post.clearEvents()
+    const saved = await this.postRepository.update(post, data.tagIds)
+    this.eventBus.publishAll(events)
 
-    return this.postRepository.update(post, data.tagIds)
+    return saved
   }
 }

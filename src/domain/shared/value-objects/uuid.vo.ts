@@ -1,14 +1,16 @@
-import { v4 as uuidv4, validate as isUUID } from 'uuid'
+import { randomUUID } from 'node:crypto'
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 export class UUID {
   private constructor(private readonly _value: string) {}
 
   static create(): UUID {
-    return new UUID(uuidv4())
+    return new UUID(randomUUID())
   }
 
   static from(value: string): UUID {
-    if (!isUUID(value)) {
+    if (!UUID_REGEX.test(value)) {
       throw new InvalidUUIDError(value)
     }
     return new UUID(value)

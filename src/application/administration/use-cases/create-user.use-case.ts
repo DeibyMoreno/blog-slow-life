@@ -1,5 +1,6 @@
 import type { UserRepository } from '../../shared/ports/outbound/user.repository.js'
-import type { PasswordService } from '../../../infrastructure/auth/password.service.js'
+import type { PasswordHasher } from '../../shared/ports/outbound/password-hasher.port.js'
+import type { EventBus } from '../../shared/ports/outbound/event-bus.port.js'
 import { User } from '../../../domain/administration/entities/index.js'
 import { UUID } from '../../../domain/shared/value-objects/uuid.vo.js'
 import { Email } from '../../../domain/shared/value-objects/email.vo.js'
@@ -10,7 +11,8 @@ import { ValidationError } from '../../../domain/shared/errors/index.js'
 export class CreateUserUseCase {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly passwordService: PasswordService,
+    private readonly passwordHasher: PasswordHasher,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(input: CreateUserDTO) {
@@ -25,22 +27,20 @@ export class CreateUserUseCase {
       throw new EmailAlreadyExistsError(data.email)
     }
 
-    const hashedPassword = await this.passwordService.hash(data.password)
+    const hashedPassword = await this.passwordHasher.hash(data.password)
 
-    const user = new User(
-      undefined,
-      undefined,
-      undefined,
-      Email.create(data.email),
-      hashedPassword,
-      data.firstName,
-      data.lastName,
-      null,
-      true,
-      UUID.from(data.roleId),
-      null,
-    )
+    const user = User.create({
+      email: Email.create(data.email),
+      passwordHash: hashedPassword,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      roleId: UUID.from(data.roleId),
+    })
 
-    return this.userRepository.save(user)
+    const events = user.clearEvents()
+    const saved = await this.userRepository.save(user)
+    this.eventBus.publishAll(events)
+
+    return saved
   }
 }

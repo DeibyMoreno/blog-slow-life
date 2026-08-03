@@ -1,16 +1,13 @@
-import { z } from 'zod'
-
-const roleNameSchema = z.enum(['ADMIN', 'EDITOR', 'VIEWER'])
+const VALID_ROLES = ['ADMIN', 'EDITOR', 'VIEWER'] as const
 
 export class RoleName {
   private constructor(public readonly value: string) {}
 
   static create(value: string): RoleName {
-    const result = roleNameSchema.safeParse(value)
-    if (!result.success) {
+    if (!VALID_ROLES.includes(value as typeof VALID_ROLES[number])) {
       throw new InvalidRoleNameError(value)
     }
-    return new RoleName(result.data)
+    return new RoleName(value)
   }
 
   equals(other: RoleName): boolean {

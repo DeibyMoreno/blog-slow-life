@@ -1,16 +1,13 @@
-import { z } from 'zod'
-
-const emailSchema = z.string().email()
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export class Email {
   private constructor(private readonly _value: string) {}
 
   static create(value: string): Email {
-    const result = emailSchema.safeParse(value)
-    if (!result.success) {
+    if (!EMAIL_REGEX.test(value)) {
       throw new InvalidEmailError(value)
     }
-    return new Email(result.data)
+    return new Email(value)
   }
 
   get value(): string {

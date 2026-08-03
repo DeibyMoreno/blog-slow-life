@@ -24,14 +24,11 @@ export class CreateRoleUseCase {
             (id) => new Permission(UUID.from(id), '', '', null, new Date()),
         )
 
-        const role = new Role(
-            undefined,
-            undefined,
-            undefined,
-            data.name,
-            data.description ?? null,
+        const role = Role.create({
+            name: data.name,
+            description: data.description ?? null,
             permissions,
-        )
+        })
 
         return this.roleRepository.save(role)
     }

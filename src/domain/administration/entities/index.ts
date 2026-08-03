@@ -1,8 +1,19 @@
-import { BaseEntity } from '../../shared/entities/base.entity.js'
+import { AggregateRoot } from '../../shared/entities/aggregate-root.entity.js'
 import type { UUID } from '../../shared/value-objects/uuid.vo.js'
 import type { Email } from '../../shared/value-objects/email.vo.js'
+import { UserCreatedEvent } from '../../shared/events/user-created.event.js'
 
-export class User extends BaseEntity {
+export interface CreateUserProps {
+  email: Email
+  passwordHash: string
+  firstName: string
+  lastName: string
+  avatarUrl?: string | null
+  isActive?: boolean
+  roleId: UUID
+}
+
+export class User extends AggregateRoot {
   constructor(
     id: UUID | undefined,
     createdAt: Date | undefined,
@@ -18,6 +29,20 @@ export class User extends BaseEntity {
     public role: Role | null = null,
   ) {
     super(id, createdAt, updatedAt)
+  }
+
+  static create(props: CreateUserProps): User {
+    const user = new User(
+      undefined, undefined, undefined,
+      props.email, props.passwordHash,
+      props.firstName, props.lastName,
+      props.avatarUrl ?? null,
+      props.isActive ?? true,
+      props.roleId,
+      null,
+    )
+    user.addDomainEvent(new UserCreatedEvent(user.id.toString(), user.email.toString(), ''))
+    return user
   }
 
   get fullName(): string {
@@ -44,7 +69,13 @@ export class User extends BaseEntity {
   }
 }
 
-export class Role extends BaseEntity {
+export interface CreateRoleProps {
+  name: string
+  description?: string | null
+  permissions?: Permission[]
+}
+
+export class Role extends AggregateRoot {
   constructor(
     id: UUID | undefined,
     createdAt: Date | undefined,
@@ -54,6 +85,14 @@ export class Role extends BaseEntity {
     public permissions: Permission[] = [],
   ) {
     super(id, createdAt, updatedAt)
+  }
+
+  static create(props: CreateRoleProps): Role {
+    return new Role(
+      undefined, undefined, undefined,
+      props.name, props.description ?? null,
+      props.permissions ?? [],
+    )
   }
 }
 
@@ -67,7 +106,15 @@ export class Permission {
   ) {}
 }
 
-export class Session extends BaseEntity {
+export interface CreateSessionProps {
+  userId: UUID
+  refreshToken: string
+  ipAddress?: string | null
+  userAgent?: string | null
+  expiresAt: Date
+}
+
+export class Session extends AggregateRoot {
   constructor(
     id: UUID | undefined,
     createdAt: Date | undefined,
@@ -79,6 +126,15 @@ export class Session extends BaseEntity {
     public expiresAt: Date,
   ) {
     super(id, createdAt)
+  }
+
+  static create(props: CreateSessionProps): Session {
+    return new Session(
+      undefined, undefined, undefined,
+      props.userId, props.refreshToken,
+      props.ipAddress ?? null, props.userAgent ?? null,
+      props.expiresAt,
+    )
   }
 
   isExpired(): boolean {
